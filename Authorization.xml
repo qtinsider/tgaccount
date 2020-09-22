@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<node name="/">
+    <interface name="com.strawberry.Authorization">
+        <method name="checkCode">
+            <arg type="s" name="code"/>
+        </method>
+        <method name="checkPassword">
+            <arg type="s" name="password"/>
+        </method>
+        <method name="logOut">
+        </method>
+        <method name="registerUser">
+            <arg type="s" name="firstName"/>
+            <arg type="s" name="lastName"/>
+        </method>
+        <method name="setPhoneNumber">
+            <arg type="s" name="phoneNumber"/>
+        </method>
+        <method name="resendCode">
+        </method>
+        <method name="deleteAccount">
+            <arg type="s" name="reason"/>
+        </method>
+        <signal name="phoneNumberRequested">
+        </signal>
+        <signal name="codeRequested">
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
+            <arg type="a{sv}" name="codeInfo"/>
+        </signal>
+        <signal name="registrationRequested">
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
+            <arg type="a{sv}" name="termsOfService"/>
+        </signal>
+        <signal name="passwordRequested">
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
+            <arg type="a{sv}" name="password"/>
+        </signal>
+        <signal name="qrCodeRequested">
+            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
+            <arg type="s" name="qrCode"/>
+        </signal>
+        <signal name="ready">
+        </signal>
+    </interface>
+</node>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE provider>
+<provider version="1.0" id="tg">
+    <name>Telegram</name>
+    <translations>telegram</translations>
+    <short-description>Chats</short-description>
+    <description>Telegram client for Nokia N9 (use tdlib)</description>
+    <icon>icon-m-service-wazapp</icon>
+    <plugin>tg</plugin>
+</provider>
+
