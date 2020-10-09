@@ -2,16 +2,12 @@
 
 #include <Accounts/Account>
 
-#include <QMessageManager>
-
 #include <QApplication>
 #include <QDeclarativeView>
-#include <QPointer>
 
 class QmlApplicationViewer : public QDeclarativeView
 {
     Q_OBJECT
-
 public:
     explicit QmlApplicationViewer(QWidget *parent = nullptr);
     ~QmlApplicationViewer() override;
@@ -19,7 +15,6 @@ public:
     static QmlApplicationViewer *create();
 
     void setMainQmlFile(const QString &file);
-    void addImportPath(const QString &path);
 
     void showExpanded();
 
@@ -50,7 +45,6 @@ signals:
     void registrationRequested(const QString &text, int minUserAge, bool showPopup);
     void passwordRequested(const QString &passwordHint, bool hasRecoveryEmailAddress, const QString &recoveryEmailAddressPattern);
     void error(const QString &errorString);
-    void ready();
 
 private slots:
     void onFinished();
@@ -58,26 +52,6 @@ private slots:
 
 private:
     class QmlApplicationViewerPrivate *d;
-};
-
-QTM_USE_NAMESPACE
-
-class SMSListener : public QObject
-{
-    Q_OBJECT
-public:
-    explicit SMSListener(QObject *parent = nullptr);
-
-signals:
-    void smsCodeReceived(const QString &code);
-
-private slots:
-    void handleMessageAdded(const QMessageId &id, const QMessageManager::NotificationFilterIdSet &matchingFilterIds);
-
-private:
-    QPointer<QMessageManager> m_manager;
-    QMessageManager::NotificationFilterIdSet m_notifFilterSet;
-    QMessageId m_messageId;
 };
 
 QApplication *createApplication(int &argc, char **argv);

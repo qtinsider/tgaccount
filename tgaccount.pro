@@ -58,8 +58,6 @@ OTHER_FILES += \
 DISTFILES += \
     qml/CodeView.qml \
     qml/EditExistingView.qml \
-    qml/LabeledSwitch.qml \
-    qml/LabeledTextField.qml \
     qml/MainPage.qml \
     qml/PasswordView.qml \
     qml/RegistrationView.qml \

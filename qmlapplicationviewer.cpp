@@ -5,13 +5,13 @@
 #include <AccountSetup/ProviderPluginProcess>
 #include <Accounts/Manager>
 
+#include <QSystemInfo>
+
 #include <QDebug>
 #include <QDeclarativeComponent>
 #include <QDeclarativeContext>
 #include <QDeclarativeEngine>
-#include <QDir>
-#include <QFileInfo>
-#include <QSystemInfo>
+#include <QUrl>
 #include <QX11Info>
 
 #ifdef HARMATTAN_BOOSTER
@@ -21,7 +21,6 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
-#include <memory>
 #include <unordered_map>
 
 class QmlApplicationViewerPrivate
@@ -31,9 +30,7 @@ class QmlApplicationViewerPrivate
     {
     }
 
-    QString mainQmlFile;
     friend class QmlApplicationViewer;
-    static QString adjustPath(const QString &path);
 
     int initType{0};
     QVariantMap parameters;
@@ -45,15 +42,6 @@ class QmlApplicationViewerPrivate
 
     tg::Authorization *authorizationIf{};
 };
-
-QString QmlApplicationViewerPrivate::adjustPath(const QString &path)
-{
-    const QString pathInInstallDir = QString::fromLatin1("%1/../%2").arg(QCoreApplication::applicationDirPath(), path);
-    if (QFileInfo(pathInInstallDir).exists())
-        return pathInInstallDir;
-
-    return path;
-}
 
 QmlApplicationViewer::QmlApplicationViewer(QWidget *parent)
     : QDeclarativeView(parent)
@@ -77,19 +65,18 @@ QmlApplicationViewer *QmlApplicationViewer::create()
 
 void QmlApplicationViewer::setMainQmlFile(const QString &file)
 {
-    Atom atomInvokedBy = XInternAtom(QX11Info::display(), "_MEEGOTOUCH_WM_INVOKED_BY", False);
     Display *display = QX11Info::display();
+
+    Atom atomInvokedBy = XInternAtom(display, "_MEEGOTOUCH_WM_INVOKED_BY", False);
     XChangeProperty(display, d->view->winId(), atomInvokedBy, XA_WINDOW, 32, PropModeReplace, (unsigned char *)&parentWindowId, 1);
     XSetTransientForHint(display, d->view->winId(), parentWindowId);
 
-    Atom atomWindowType = XInternAtom(QX11Info::display(), "_MEEGOTOUCH_NET_WM_WINDOW_TYPE_MAPPLICATION", False);
-
-    XChangeProperty(QX11Info::display(), d->view->winId(), XInternAtom(QX11Info::display(), "_NET_WM_WINDOW_TYPE", False), XA_ATOM, 32,
-                    PropModeAppend, (unsigned char *)&atomWindowType, 1);
+    Atom atomWindowType = XInternAtom(display, "_MEEGOTOUCH_NET_WM_WINDOW_TYPE_MAPPLICATION", False);
+    XChangeProperty(display, d->view->winId(), XInternAtom(display, "_NET_WM_WINDOW_TYPE", False), XA_ATOM, 32, PropModeAppend,
+                    (unsigned char *)&atomWindowType, 1);
 
     this->rootContext()->setContextProperty("actor", this);
-    d->mainQmlFile = QmlApplicationViewerPrivate::adjustPath(file);
-    setSource(QUrl(d->mainQmlFile));
+    setSource(QUrl(file));
 
     QObject *themeObject = qvariant_cast<QObject *>(d->view->rootContext()->contextProperty("theme"));
     if (themeObject)
@@ -100,11 +87,6 @@ void QmlApplicationViewer::setMainQmlFile(const QString &file)
         screenObject->setProperty("allowedOrientations", 1);
 }
 
-void QmlApplicationViewer::addImportPath(const QString &path)
-{
-    engine()->addImportPath(QmlApplicationViewerPrivate::adjustPath(path));
-}
-
 void QmlApplicationViewer::showExpanded()
 {
     showFullScreen();
@@ -113,9 +95,10 @@ void QmlApplicationViewer::showExpanded()
 void QmlApplicationViewer::init(int type)
 {
     d->initType = type;
+
     d->view->rootContext()->setContextProperty("initType", d->initType);
 
-    d->authorizationIf = new tg::Authorization("tg.AuthenticationStore", "/", QDBusConnection::sessionBus(), this);
+    d->authorizationIf = new tg::Authorization("tg.Authorization", "/", QDBusConnection::sessionBus(), this);
 
     d->manager = new Accounts::Manager("IM");
     d->service = d->manager->service("tg");
@@ -126,7 +109,6 @@ void QmlApplicationViewer::init(int type)
             SIGNAL(registrationRequested(const QString &, int, bool)));
     connect(d->authorizationIf, SIGNAL(passwordRequested(const QString &, bool, const QString &)),
             SIGNAL(passwordRequested(const QString &, bool, const QString &)));
-    connect(d->authorizationIf, SIGNAL(ready()), SIGNAL(ready()));
     connect(d->authorizationIf, SIGNAL(ready()), SLOT(onFinished()));
     connect(d->authorizationIf, SIGNAL(error(const QString &)), SIGNAL(error(const QString &)));
 }
@@ -195,7 +177,7 @@ QString QmlApplicationViewer::getLocalizedString(const QString &str) const
         {"Telegram", "Please enter the code you've just received\nin your previous Telegram app."},
         {"SMS", "We've sent an SMS with an activation\ncode to your phone %1"},
         {"Call", "Telegram dialed your number\n %1"},
-        {"Flash Call", "Telegram dialed your number\n %1"},
+        {"FlashCall", "Telegram dialed your number\n %1"},
         {"PHONE_NUMBER_INVALID", "Invalid phone number. Please try again."},
         {"PHONE_CODE_INVALID", "You have entered an invalid code."},
         {"PASSWORD_HASH_INVALID", "You have entered an invaild password."},
@@ -249,6 +231,8 @@ QString QmlApplicationViewer::formatTime(int totalSeconds) const
     return res;
 }
 
+QTM_USE_NAMESPACE
+
 bool QmlApplicationViewer::getDefaultIndex(const QString &str) const
 {
     QSystemInfo info;
@@ -271,12 +255,11 @@ void QmlApplicationViewer::onFinished()
     QTimer::singleShot(3000, qApp, SLOT(quit()));
 }
 
-void QmlApplicationViewer::onAccountCreated(Accounts::AccountId id)
+void QmlApplicationViewer::onAccountCreated([[maybe_unused]] Accounts::AccountId id)
 {
     QVariantMap localParameters = d->parameters["parameters"].toMap();
 
     account->setValue("name", d->parameters["phoneNumber"]);
-    account->setValue("databaseDirectory", QString::number(id));  // Note: Fix later on multi account
     account->setValue("api_id", localParameters["api_id"].toInt());
     account->setValue("api_hash", localParameters["api_hash"].toString());
     account->setValue("useFileDatabase", localParameters["useFileDatabase"].toBool());
@@ -286,49 +269,6 @@ void QmlApplicationViewer::onAccountCreated(Accounts::AccountId id)
     account->setValue("enableStorageOptimizer", localParameters["enableStorageOptimizer"].toBool());
     account->setEnabled(true);
     account->sync();
-}
-
-SMSListener::SMSListener(QObject *parent)
-    : QObject(parent)
-{
-    // Manager for listening messages
-    m_manager = new QMessageManager(this);
-
-    // Listen new added messages
-    connect(m_manager, SIGNAL(messageAdded(const QMessageId &, const QMessageManager::NotificationFilterIdSet &)),
-            SLOT(handleMessageAdded(const QMessageId &, const QMessageManager::NotificationFilterIdSet &)));
-
-    // Create 2 filers set for filtering messages
-    // - SMS filter
-    // - InboxFolder filter
-    m_notifFilterSet.insert(m_manager->registerNotificationFilter(QMessageFilter::byType(QMessage::Sms) &
-                                                                  QMessageFilter::byStandardFolder(QMessage::InboxFolder)));
-}
-
-void SMSListener::handleMessageAdded(const QMessageId &id, const QMessageManager::NotificationFilterIdSet &matchingFilterIds)
-{
-    // New message received
-    if (matchingFilterIds.contains(m_notifFilterSet)) {
-        // New SMS in the inbox
-
-        QMessageId messageId = id;
-
-        QMessage message = m_manager->message(messageId);
-        // SMS message body
-        QString messageString = message.textContent();
-
-        if (messageString.left(13) == "Telegram code") {
-            // Extract the 5 characters from the right
-            // Example SMS message is:
-            // Telegram code 18003 or {... https//t.me/login/18003}
-            QString code = messageString.right(5);
-
-            // Remove message from inbox
-            m_manager->removeMessage(messageId);
-
-            emit smsCodeReceived(code);
-        }
-    }
 }
 
 QApplication *createApplication(int &argc, char **argv)

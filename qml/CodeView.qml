@@ -124,16 +124,6 @@ Page {
         }
     }
 
-    Connections {
-        target: SmsListener
-
-        onSmsCodeReceived: {
-            pageStack.busy = true
-            actor.checkCode(code)
-        }
-
-    }
-
     onTimeoutChanged: {
         codeExpireTimer.start()
         codeTimeText.text = actor.formatTime(timeout / 1000)
