@@ -1,4 +1,5 @@
 #include <QApplication>
+#include <QDBusConnectionInterface>
 #include <QDeclarativeContext>
 
 #include <AccountSetup/ProviderPluginProcess>
@@ -32,7 +33,11 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
             break;
     }
 
-    viewer->setMainQmlFile(QLatin1String("/opt/tgaccount/qml/main.qml"));
+    SMSListener listener;
+    viewer->rootContext()->setContextProperty("SmsListener", &listener);
+    viewer->rootContext()->setContextProperty("currentPhoneNumber", plugin->account()->valueAsString("name"));
+
+    viewer->setMainQmlFile(QLatin1String("qrc:/qml/main.qml"));
     viewer->showExpanded();
 
     return app->exec();

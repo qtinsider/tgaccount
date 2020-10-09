@@ -1,45 +1,60 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<node name="/">
-    <interface name="com.strawberry.Authorization">
-        <method name="checkCode">
-            <arg type="s" name="code"/>
-        </method>
-        <method name="checkPassword">
-            <arg type="s" name="password"/>
-        </method>
-        <method name="logOut">
-        </method>
-        <method name="registerUser">
-            <arg type="s" name="firstName"/>
-            <arg type="s" name="lastName"/>
-        </method>
-        <method name="setPhoneNumber">
-            <arg type="s" name="phoneNumber"/>
-        </method>
-        <method name="resendCode">
-        </method>
-        <method name="deleteAccount">
-            <arg type="s" name="reason"/>
-        </method>
-        <signal name="phoneNumberRequested">
-        </signal>
-        <signal name="codeRequested">
-            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
-            <arg type="a{sv}" name="codeInfo"/>
-        </signal>
-        <signal name="registrationRequested">
-            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
-            <arg type="a{sv}" name="termsOfService"/>
-        </signal>
-        <signal name="passwordRequested">
-            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
-            <arg type="a{sv}" name="password"/>
-        </signal>
-        <signal name="qrCodeRequested">
-            <annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QVariantMap"/>
-            <arg type="s" name="qrCode"/>
-        </signal>
-        <signal name="ready">
-        </signal>
-    </interface>
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="tg.Authorization">
+    <method name="checkCode">
+      <arg type="s" name="code"/>
+    </method>
+    <method name="checkPassword">
+      <arg type="s" name="password"/>
+    </method>
+    <method name="checkDbEncryptionKey">
+      <arg type="ay" name="encryptionKey"/>
+    </method>
+    <method name="logOut"/>
+    <method name="getAuthorizationState">
+      <arg direction="out" type="s"/>
+    </method>
+    <method name="registerUser">
+      <arg type="s" name="firstName"/>
+      <arg type="s" name="lastName"/>
+    </method>
+    <method name="setPhoneNumber">
+      <arg type="s" name="phoneNumber"/>
+    </method>
+    <method name="setTdlibParameters">
+      <annotation value="QVariantMap" name="com.trolltech.QtDBus.QtTypeName.In0"/>
+      <arg type="a{sv}" name="parameters"/>
+    </method>
+    <method name="resendCode"/>
+    <method name="deleteAccount">
+      <arg type="s" name="reason"/>
+    </method>
+    <signal name="phoneNumberRequested"/>
+    <signal name="codeRequested">
+      <annotation value="QVariantMap" name="com.trolltech.QtDBus.QtTypeName.In1"/>
+      <annotation value="QVariantMap" name="com.trolltech.QtDBus.QtTypeName.In2"/>
+      <arg type="s" name="phoneNumber"/>
+      <arg type="a{sv}" name="type"/>
+      <arg type="a{sv}" name="nextType"/>
+      <arg type="i" name="timeout"/>
+    </signal>
+    <signal name="registrationRequested">
+      <arg type="s" name="text"/>
+      <arg type="i" name="minUserAge"/>
+      <arg type="b" name="showPopup"/>
+    </signal>
+    <signal name="passwordRequested">
+      <arg type="s" name="passwordHint"/>
+      <arg type="b" name="hasRecoveryEmailAddress"/>
+      <arg type="s" name="recoveryEmailAddressPattern"/>
+    </signal>
+    <signal name="qrCodeRequested">
+      <arg type="s" name="link"/>
+    </signal>
+    <signal name="ready"/>
+    <signal name="error">
+      <arg type="s" name="errorString"/>
+    </signal>
 </node>
+

@@ -7,9 +7,7 @@ Item {
     property alias title: titleLabel.text
     property alias subtitle: subtitleLabel.text
     property alias showseparator: separator.visible
-    property alias showcheckbox: checkbox.visible
     property alias image: imageElement.source
-    property alias checked: checkbox.checked
     property alias extraheight: subtitleLabel.height
 
     height: 92 + subtitleLabel.height + separator.height
@@ -34,7 +32,6 @@ Item {
             Label {
                 id: titleLabel
                 anchors.verticalCenter: imageElement.verticalCenter
-                anchors.right: checkbox.left
                 anchors.left: imageElement.right
                 anchors.leftMargin: 20
 
@@ -44,11 +41,6 @@ Item {
                 wrapMode: Text.NoWrap
             }
 
-            Switch {
-                id: checkbox
-                anchors.verticalCenter: imageElement.verticalCenter
-                anchors.right: parent.right
-            }
         }
 
         Label {

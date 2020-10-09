@@ -1,57 +1,91 @@
 import QtQuick 1.1
 import com.nokia.meego 1.1
+import com.nokia.extras 1.1
 
 PageStackWindow {
     id: appWindow
 
-    initialPage: mainPage
+    initialPage: actor.getAuthorizationState() === "Ready" ? editExistingView : mainPage
 
-    MainPage {
-        id: mainPage
-    }
+    MainPage { id: mainPage }
+    EditExistingView { id: editExistingView }
 
     ToolBarLayout {
         id: commonTools
-        visible: false
         ToolIcon {
             platformIconId: "toolbar-back"
             onClicked: Qt.quit()
         }
     }
 
-    ToolBarLayout {
-        id: editTools
-        visible: false
-        ToolButton {
-            text: qsTr("Save")
-            enabled: mainPage.checkFilled()
-            onClicked: mainPage.saveAccount()
+    Connections {
+        target: actor
+        onCodeRequested: {
+            pageStack.busy = false
+            pageStack.push(Qt.resolvedUrl("CodeView.qml"), {
+                               phoneNumber: phoneNumber,
+                               type: type,
+                               nextType: nextType,
+                               timeout: timeout * 1000})
+
+            actor.setValue("phoneNumber", phoneNumber)
         }
-        ToolButton {
-            text: qsTr("Cancel")
-            onClicked: Qt.quit()
+
+        onPasswordRequested: {
+            pageStack.busy = false
+            pageStack.push(Qt.resolvedUrl("PasswordView.qml"), { passwordHint: passwordHint })
         }
-        ToolIcon {
-            platformIconId: "toolbar-view-menu"
-            anchors.right: (parent === undefined) ? undefined : parent.right
-            onClicked: (myMenu.status === DialogStatus.Closed) ? myMenu.open() : myMenu.close()
+
+        onRegistrationRequested: {
+            pageStack.busy = false
+            pageStack.push(Qt.resolvedUrl("RegistrationView.qml"), { text: text })
+        }
+
+        onError: {
+            pageStack.busy = false
+            showBanner(errorString)
         }
     }
 
-    Menu {
-        id: myMenu
-        visualParent: pageStack
-        MenuLayout {
-            MenuItem { text: qsTr("Delete account"); onClicked: delconfirm.open() }
+    Rectangle {
+        z: 2
+        anchors.fill: parent
+        visible: pageStack.busy
+        color: "#70000000"
+
+        BusyIndicator  {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.verticalCenter: parent.verticalCenter
+            running: true
+            platformStyle: BusyIndicatorStyle { size: "large" }
         }
     }
 
-    QueryDialog {
-        id: delconfirm
-        titleText: qsTr("Delete account")
-        message: qsTr("Are you sure to delete account")
-        acceptButtonText: qsTr("Ok")
-        rejectButtonText: qsTr("Cancel")
-        onAccepted: actor.deleteAccount()
+    InfoBanner {
+        id: banner
+        y: 36 /* StatusBar height */ + 8
     }
+
+    function showBanner(text) {
+        banner.text = actor.getLocalizedString(text)
+        banner.show()
+    }
+
+    Component.onCompleted: {
+        var parameters = {
+            api_id: 142713,
+            api_hash: "9e9e687a70150c6436afe3a2b6bfd7d7",
+            useFileDatabase: true,
+            useChatInfoDatabase: true,
+            useMessageDatabase: true,
+            useSecretChats: true,
+            enableStorageOptimizer: true
+        }
+
+        if (actor.getAuthorizationState() === "WaitTdlibParameters") {
+            actor.setTdlibParameters(parameters)
+            actor.setValue("parameters", parameters)
+        }
+    }
+
 }

@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>qml/Title.qml</file>
+        <file>qml/telegram-logo.png</file>
+        <file>qml/RegistrationView.qml</file>
+        <file>qml/PasswordView.qml</file>
+        <file>qml/MainPage.qml</file>
+        <file>qml/main.qml</file>
+        <file>qml/CodeView.qml</file>
+        <file>qml/EditExistingView.qml</file>
+    </qresource>
+</RCC>

@@ -5,7 +5,6 @@
     <translations>telegram</translations>
     <short-description>Chats</short-description>
     <description>Telegram client for Nokia N9 (use tdlib)</description>
-    <icon>icon-m-service-wazapp</icon>
+    <icon>icon-m-service-telegram</icon>
     <plugin>tg</plugin>
 </provider>
-

@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8"?>
 <service id="tg">
     <type>IM</type>
     <provider>tg</provider>
     <name>Telegram</name>
     <short-description>Chat</short-description>
     <description>Telegram client for Nokia N9 (use tdlib)</description>
-    <icon>icon-m-service-wazapp</icon>
+    <icon>icon-m-service-telegram</icon>
+    <setupName>TelegramSetupName</setupName>
     <type-data></type-data>
 </service>

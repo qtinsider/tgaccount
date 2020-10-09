@@ -9,10 +9,8 @@ PKGCONFIG += accounts-qt AccountSetup
 
 DBUS_INTERFACES += Authorization.xml
 
-# If your application uses the Qt Mobility libraries, uncomment the following
-# lines and add the respective components to the MOBILITY variable.
-# CONFIG += mobility
-# MOBILITY +=
+CONFIG += mobility
+MOBILITY += systeminfo messaging
 
 # Speed up launching on MeeGo/Harmattan when using applauncherd daemon
 CONFIG += qdeclarative-boostable
@@ -48,10 +46,6 @@ service.files = tg.service
 service.path = /usr/share/accounts/services
 INSTALLS += provider service
 
-qml.files = qml/*.qml
-qml.path = /opt/tgaccount/qml
-INSTALLS += qml
-
 OTHER_FILES += \
     qtc_packaging/debian_harmattan/rules \
     qtc_packaging/debian_harmattan/README \
@@ -60,6 +54,20 @@ OTHER_FILES += \
     qtc_packaging/debian_harmattan/control \
     qtc_packaging/debian_harmattan/compat \
     qtc_packaging/debian_harmattan/changelog
+
+DISTFILES += \
+    qml/CodeView.qml \
+    qml/EditExistingView.qml \
+    qml/LabeledSwitch.qml \
+    qml/LabeledTextField.qml \
+    qml/MainPage.qml \
+    qml/PasswordView.qml \
+    qml/RegistrationView.qml \
+    qml/Title.qml \
+    qml/main.qml
+
+RESOURCES += \
+    resource.qrc
 
 DEFINES += HARMATTAN_BOOSTER
 LIBS += -lX11
